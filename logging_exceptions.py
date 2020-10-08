@@ -63,7 +63,7 @@ class ExlogLogger(logging.Logger):
         super(ExlogLogger, self).__init__(name, level)
         self.ignored_functions = []
 
-    def findCaller(self, stack_info=False):
+    def findCaller(self, stack_info=False, stacklevel=1):
         """
         Modified copy of the original logging.Logger.findCaller function.
 
@@ -77,6 +77,12 @@ class ExlogLogger(logging.Logger):
         #IronPython isn't run with -X:Frames.
         if f is not None:
             f = f.f_back
+        orig_f = f
+        while f and stacklevel > 1:
+            f = f.f_back
+            stacklevel -= 1
+        if not f:
+            f = orig_f
         rv = "(unknown file)", 0, "(unknown function)", None
         while hasattr(f, "f_code"):
             co = f.f_code
